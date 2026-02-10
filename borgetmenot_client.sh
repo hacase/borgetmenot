@@ -5,14 +5,22 @@ set -o pipefail
 
 
 #=============================
+# Config file
+#=============================
+
+CONFIG_FILE="/usr/local/bin/borgetmenot/borgetmenot_client.conf"
+source "$CONFIG_FILE"
+
+
+#=============================
 # Client
 #=============================
 
-MACHINE_NAME="thinkerp50"
-MACHINE_USER="taroot"
+#MACHINE_NAME="thinkerp50"
+#MACHINE_USER="taroot"
 
-BORG_PASSFILE="/home/taroot/something/donthackmepls/borg/borgetmenot_thinkerp50.txt"
-BACKUP_DIR="/home/${MACHINE_USER}/borgetmenot_files"
+#BORG_PASSFILE="/home/taroot/something/donthackmepls/borg/borgetmenot_thinkerp50.txt"
+#BACKUP_DIR="/home/${MACHINE_USER}/borgetmenot_files"
 mkdir -p $BACKUP_DIR
 
 
@@ -20,12 +28,12 @@ mkdir -p $BACKUP_DIR
 # Server
 #=============================
 
-SERVER_IP="192.168.178.224"
-SERVER_USER="taroot"
-SERVER_NAME="raijin"
+#SERVER_IP="192.168.178.224"
+#SERVER_USER="taroot"
+#SERVER_NAME="raijin"
 
-REPO_BASE_PATH="/mnt/data/ALLBACKUP/BORGETMENOT/repos"
-REPO_PATH="$REPO_BASE_PATH/${MACHINE_NAME}"
+#REPO_BASE_PATH="/mnt/data/ALLBACKUP/BORGETMENOT/repos"
+#REPO_PATH="$REPO_BASE_PATH/${MACHINE_NAME}"
 
 
 #=============================
@@ -39,45 +47,45 @@ export BORG_REPO="ssh://${SERVER_NAME}${REPO_PATH}"
 # Logfile
 #=============================
 
-LOGDIR="/var/log/borgetmenot"
+#LOGDIR="/var/log/borgetmenot"
 mkdir -p $LOGDIR
-LOGFILE="$LOGDIR/borgetmenot_${MACHINE_NAME}.log"
-MAX_LOG_SIZE_MB=50
+#LOGFILE="$LOGDIR/borgetmenot_${MACHINE_NAME}.log"
+#MAX_LOG_SIZE_MB=50
 
-START_INFO="Start borgetmenot."
-EXIT_INFO="Exit borgetmenot."
+#START_INFO="Start borgetmenot."
+#EXIT_INFO="Exit borgetmenot."
 
 
 #=============================
 # Notification
 #=============================
 
-NOTIFY_EMAIL="tarowtb@pm.me"
-MSMTP_ACCOUNT="proton"
-NOTIFY_METHOD="both"
+#NOTIFY_EMAIL="tarowtb@pm.me"
+#MSMTP_ACCOUNT="proton"
+#NOTIFY_METHOD="both"
 
-DISK_THRESHOLD_WARN=80
-DISK_THRESHOLD_CRITICAL=95
+#DISK_THRESHOLD_WARN=80
+#DISK_THRESHOLD_CRITICAL=95
 
 
 #=============================
 # Borg config
 #=============================
 
-BACKUP_PATHS=(
-	"/home/"
-	"/etc"
-	"/usr/local"
-	"/opt"
-	"/var/lib/systemd"
-	"/var/lib/NetworkManager"
-)
+#BACKUP_PATHS=(
+#	"/home/"
+#	"/etc"
+#	"/usr/local"
+#	"/opt"
+#	"/var/lib/systemd"
+#	"/var/lib/NetworkManager"
+#)
 
-KEEP_WITHIN="6H"
-KEEP_HOURLY=24
-KEEP_DAILY=14
-KEEP_WEEKLY=5
-KEEP_MONTHLY=6
+#KEEP_WITHIN="6H"
+#KEEP_HOURLY=24
+#KEEP_DAILY=14
+#KEEP_WEEKLY=5
+#KEEP_MONTHLY=6
 
 
 #=============================
