@@ -30,5 +30,6 @@ borg init --encryption=keyfile-blake2 raijin:/mnt/data/ALLBACKUP/BORGETMENOT/rep
 
 Make sure to backup keyfile and passphrase!!
 
+## Passfile
 
-
+Store passfile to default location ```this```
