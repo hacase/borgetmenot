@@ -333,11 +333,18 @@ ${log_excerpt}
 # ==== Borg ==== #
 
 run_borg() {
-	local borg_base_cmd=(
-		systemd-inhibit
-		--what=sleep:idle
-		--who="Borg Backup"
-		--why="I wont let you sleep"
+	local borg_base_cmd=()
+
+	if command -v systemd-inhibit >/dev/null 2>&1; then
+		borg_base_cmd+=(
+			systemd-inhibit
+			--what=sleep:idle
+			--who="Borg Backup"
+			--why="I wont let you sleep"
+		)
+	fi
+
+	borg_base_cmd+=(
 		borg
 		--lock-wait 600
 	)
