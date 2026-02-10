@@ -24,12 +24,25 @@ user needs to send email via msmtp
 
 # Init borg repo
 
+Create as user, if not change the keyfile directory accordingly.
 ```bash
-borg init --encryption=keyfile-blake2 raijin:/mnt/data/ALLBACKUP/BORGETMENOT/repos/<machine_name>
+borg init --encryption=keyfile-blake2 raijin:/mnt/data/ALLBACKUP/BORGETMENOT/repos/<client>
 ```
 
 Make sure to backup keyfile and passphrase!!
 
 ## Passfile
 
-Store passfile to default location ```this```
+Store passfile to default location ```/usr/local/bin/borgetmenot/borgetmenot<client>.txt```.
+Set permission
+```bash
+chmod 600 /usr/local/bin/borgetmenot/borgetmenot<client>.txt
+```
+
+## Keyfile
+
+Keyfile should be here by borg default if created by user
+```bash
+chmod 600 /home/${whoami}/.config/borg/keys/<client>
+chmod 700 /home/${whoami}/.config/borg/keys/
+```
