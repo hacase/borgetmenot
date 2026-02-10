@@ -305,8 +305,8 @@ error_exit() {
 
 Date:       $(date)
 Machine:    ${MACHINE_NAME}
-Mode:       $(MODE)
-Unit:       $(UNIT_NAME)
+Mode:       ${MODE}
+Unit:       ${UNIT_NAME}
 Repository: ${BORG_REPO}
 Error:      ${error_msg}
 
