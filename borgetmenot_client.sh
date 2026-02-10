@@ -54,6 +54,8 @@ mkdir -p $LOGDIR
 
 #START_INFO="Start borgetmenot."
 #EXIT_INFO="Exit borgetmenot."
+#ERROR_INFO="somewhere only we know"
+#ERROR_MSG=$ERROR_INFO
 
 
 #=============================
@@ -183,6 +185,8 @@ cleanup() {
 
 	unset BORG_PASSCOMMAND
 
+	error_exit_email
+
 	log INFO "$EXIT_INFO"
 }
 
@@ -301,14 +305,19 @@ notify() {
 
 
 error_exit() {
-	local error_msg="$1"
+	ERROR_MSG="${1:-$ERROR_INFO}"
 	local exit_code="${2:-1}"
 
-	log ERROR "$error_msg"
+	log ERROR "$ERROR_MSG"
 
+	exit "$exit_code"
+}
+
+
+error_exit_email() {
 	local last_line=$(grep -n "${START_INFO}" "$LOGFILE" 2>/dev/null | tail -1 | cut -d: -f1)
 	local log_excerpt=$(tail -n +${last_line:-1} "$LOGFILE" 2>/dev/null || echo "Log not available.")	
-	
+
 	local email_body="Backup FAILED!
 
 Date:       $(date)
@@ -316,7 +325,7 @@ Machine:    ${MACHINE_NAME}
 Mode:       ${MODE}
 Unit:       ${UNIT_NAME}
 Repository: ${BORG_REPO}
-Error:      ${error_msg}
+Error:      ${ERROR_MSG}
 
 ========= LOG =========
 
@@ -325,8 +334,6 @@ ${log_excerpt}
 ======================="
 
 	notify "Backup FAILED: ${MACHINE_NAME}" "$email_body" "critical"
-
-	exit "$exit_code"
 }
 
 
