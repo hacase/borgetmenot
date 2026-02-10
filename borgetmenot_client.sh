@@ -32,7 +32,7 @@ REPO_PATH="$REPO_BASE_PATH/${MACHINE_NAME}"
 # SSH
 #=============================
 
-export BORG_REPO="ssh://${SERVER_NAME}:${REPO_PATH}"
+export BORG_REPO="ssh://${SERVER_NAME}${REPO_PATH}"
 
 
 #=============================
