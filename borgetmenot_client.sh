@@ -326,7 +326,6 @@ ${log_excerpt}
 
 	notify "Backup FAILED: ${MACHINE_NAME}" "$email_body" "critical"
 
-	log INFO "$EXIT_INFO"
 	exit "$exit_code"
 }
 
