@@ -12,7 +12,7 @@ MACHINE_NAME="thinkerp50"
 MACHINE_USER="taroot"
 
 BORG_PASSFILE="/home/taroot/something/donthackmepls/borg/borgetmenot_thinkerp50.txt"
-BACKUP_DIR="/home/${MACHINE_USER}/borgetmenot"
+BACKUP_DIR="/home/${MACHINE_USER}/borgetmenot_files"
 
 
 #=============================
@@ -514,7 +514,7 @@ run_test() {
 Date: $(date)
 Test directory: ${TEST_DIR}
 
-Heyo, test email from borgetmenot worked!"
+Heyo, test email from ozaki via borgetmenot worked!"
 
 		if ! send_email "Backup Test: ${MACHINE_NAME}" "$test_email_body"; then
 			log WARN "Email notification test... FAILED"
