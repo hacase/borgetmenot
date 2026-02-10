@@ -190,6 +190,7 @@ cleanup() {
 	log INFO "$EXIT_INFO"
 }
 
+exec 2> >(tee -a "$LOGFILE")
 trap cleanup EXIT
 trap 'error_exit "Script interrupted (SIGINT)." 130' INT
 trap 'error_exit "Script terminated (SIGTERM)." 142' TERM
