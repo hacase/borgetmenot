@@ -13,6 +13,7 @@ MACHINE_USER="taroot"
 
 BORG_PASSFILE="/home/taroot/something/donthackmepls/borg/borgetmenot_thinkerp50.txt"
 BACKUP_DIR="/home/${MACHINE_USER}/borgetmenot_files"
+mkdir -p $BACKUP_DIR
 
 
 #=============================
