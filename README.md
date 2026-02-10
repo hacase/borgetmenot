@@ -41,7 +41,7 @@ chmod 600 /usr/local/bin/borgetmenot/borgetmenot<client>.txt
 
 ## Keyfile
 
-Keyfile should be here by borg default if created by user
+Keyfile should be here by borg default if created by root
 ```bash
 chmod 600 /root/.config/borg/keys/<client>
 chmod 700 /root/.config/borg/keys/
