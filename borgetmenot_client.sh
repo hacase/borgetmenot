@@ -9,7 +9,7 @@ set -E
 # Config file
 #=============================
 
-CONFIG_FILE="/usr/local/bin/borgetmenot/borgetmenot_thinkerp50.conf"
+CONFIG_FILE="/usr/local/bin/borgetmenot/borgetmenot_fujin.conf"
 source "$CONFIG_FILE"
 
 
