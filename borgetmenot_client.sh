@@ -2,6 +2,7 @@
 
 set -e
 set -o pipefail
+set -E
 
 
 #=============================
@@ -69,6 +70,21 @@ mkdir -p $LOGDIR
 #DISK_THRESHOLD_WARN=80
 #DISK_THRESHOLD_CRITICAL=95
 
+#=============================
+# Hook
+#=============================
+
+run_hooks() {
+	local cmd="$1"
+
+	if type -t "$cmd" >/dev/null 2>&1; then
+		"$cmd"
+		return ${PIPESTATUS[0]}
+	else
+		LOG INFO "I don't have any hooks."
+	fi
+}
+
 
 #=============================
 # Borg config
@@ -94,6 +110,70 @@ mkdir -p $LOGDIR
 # Functions
 #=============================
 
+# ==== Cleanup ==== #
+
+cleanup() {
+	set +e
+
+	log INFO "Cleaning up..."
+
+	if [[ $TEST_MODE == false ]]; then
+		title 'Captain Hook leaving'
+		run_hooks POST_HOOKS
+	fi
+
+	log INFO "Unsetting passcommand..."
+	unset BORG_PASSCOMMAND
+
+	log INFO "$EXIT_INFO"
+}
+
+
+error_exit() {
+	export ERROR_MSG="${1:-$ERROR_INFO}"
+	local exit_code="${2:-1}"
+
+	log ERROR "$ERROR_MSG"
+
+	error_exit_email
+
+	cleanup
+
+	exit "$exit_code"
+}
+
+
+error_exit_email() {
+	local last_line=$(grep -n "${START_INFO}" "$LOGFILE" 2>/dev/null | tail -1 | cut -d: -f1)
+	local log_excerpt=$(tail -n +${last_line:-1} "$LOGFILE" 2>/dev/null || echo "Log not available.")	
+
+	local email_body="Backup FAILED!
+
+Date:       $(date)
+Machine:    ${MACHINE_NAME}
+Mode:       ${MODE}
+Unit:       ${UNIT_NAME}
+Repository: ${BORG_REPO}
+Error:      ${ERROR_MSG}
+
+========= LOG =========
+
+${log_excerpt}
+
+======================="
+
+	notify "Backup FAILED: ${MACHINE_NAME}" "$email_body" "critical"
+}
+
+
+trap 'error_exit "Script interrupted (SIGINT)." 130' INT
+trap 'error_exit "Script terminated (SIGTERM)." 142' TERM
+trap 'error_exit "Connection lost (SIGHUP)." 129' HUP
+trap 'error_exit "Command failed at line $LINENO" $?' ERR
+
+exec 2> >(tee -a "$LOGFILE")
+
+
 # ==== Overall ==== #
 
 SCRIPT_PATH="$(readlink -f "$0")"
@@ -116,7 +196,7 @@ title() {
 	local msg="$1"
 	local char="${2:-=}"
 
-	local term_width=$(tput cols 2>/dev/null || echo 88)
+	local term_width=$(tput cols 2>/dev/null || echo 76)
 	local log_width=40
 	local timestamp="[$(date '+%Y-%m-%d %H:%M:%S')]"
 
@@ -176,25 +256,6 @@ prebackup_check() {
 
 	log INFO "Pre-backup checks completed."
 }
-
-
-# ==== Cleanup ==== #
-
-cleanup() {
-	log INFO "Unsetting passcommand..."
-
-	unset BORG_PASSCOMMAND
-
-	error_exit_email
-
-	log INFO "$EXIT_INFO"
-}
-
-exec 2> >(tee -a "$LOGFILE")
-trap cleanup EXIT
-trap 'error_exit "Script interrupted (SIGINT)." 130' INT
-trap 'error_exit "Script terminated (SIGTERM)." 142' TERM
-trap 'error_exit "Connection lost (SIGHUP)." 129' HUP
 
 
 # ==== Logging ==== #
@@ -305,41 +366,6 @@ notify() {
 }
 
 
-error_exit() {
-	ERROR_MSG="${1:-$ERROR_INFO}"
-	local exit_code="${2:-1}"
-
-	log ERROR "$ERROR_MSG"
-
-	exit "$exit_code"
-}
-
-
-error_exit_email() {
-	local last_line=$(grep -n "${START_INFO}" "$LOGFILE" 2>/dev/null | tail -1 | cut -d: -f1)
-	local log_excerpt=$(tail -n +${last_line:-1} "$LOGFILE" 2>/dev/null || echo "Log not available.")	
-
-	local email_body="Backup FAILED!
-
-Date:       $(date)
-Machine:    ${MACHINE_NAME}
-Mode:       ${MODE}
-Unit:       ${UNIT_NAME}
-Repository: ${BORG_REPO}
-Error:      ${ERROR_MSG}
-
-========= LOG =========
-
-${log_excerpt}
-
-======================="
-
-	notify "Backup FAILED: ${MACHINE_NAME}" "$email_body" "critical"
-}
-
-
-# ==== Borg ==== #
-
 run_borg() {
 	local borg_base_cmd=()
 
@@ -371,18 +397,6 @@ main () {
 
 
 	title "Starting backup at $(date)"
-
-
-	log INFO "Saving enabled services..."
-	systemctl list-unit-files --state=enabled > ${BACKUP_DIR}/enabled-services.txt
-
-	log INFO "Saving kernel parameters..."
-	cat /proc/cmdline > ${BACKUP_DIR}/cmdline.txt
-
-	if [ -f /etc/mkinitcpio.conf ]; then
-		log INFO "Saving mkinitcpio.conf..."
-		cat /etc/mkinitcpio.conf > ${BACKUP_DIR}/mkinitcpio.txt
-	fi
 
 	log INFO "Backup started..."
 	prebackup_check
@@ -603,7 +617,7 @@ Heyo, test email from ozaki via borgetmenot worked!"
 	log INFO "   cat $LOGFILE"
 	echo ""
 
-	exit 0
+	return 0
 }
 
 
@@ -641,8 +655,17 @@ log INFO "Unit name: $UNIT_NAME"
 if [ "$TEST_MODE" = true ]; then
 	run_test
 else
+	title "Captain Hook is here"
+	run_hooks PRE_HOOKS
+
 	main
 fi
+
+
+cleanup
+
+
+title "Exit backup"
 
 
 #=============================
