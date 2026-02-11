@@ -9,7 +9,7 @@ set -E
 # Config file
 #=============================
 
-CONFIG_FILE="/usr/local/bin/borgetmenot/borgetmenot_client.conf"
+CONFIG_FILE="/usr/local/bin/borgetmenot/borgetmenot_thinkerp50.conf"
 source "$CONFIG_FILE"
 
 
@@ -631,6 +631,8 @@ log INFO "$START_INFO"
 # ==== Check ==== #
 
 title "BORGETMENOT Backup for $MACHINE_NAME"
+
+log INFO "Loaded $CONFIG_FILE."
 
 if [ "$EUID" -ne 0 ]; then
 	log ERROR "Please run as root."
