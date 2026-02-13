@@ -9,8 +9,8 @@ sudo ssh raijin
 
 ## Copy client file
 ```bash
-sudo mkdir -p /usr/local/bin/borgetmenot
-sudo cp borgetmenot_client.sh /usr/local/bin/borgetmenot/borgetmenot_client.sh
+mkdir -p /usr/local/bin/borgetmenot
+cp borgetmenot_client.sh /usr/local/bin/borgetmenot/conf/borgetmenot_client.sh
 ```
 
 ## Make environment

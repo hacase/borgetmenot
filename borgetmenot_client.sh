@@ -9,7 +9,7 @@ set -E
 # Config file
 #=============================
 
-CONFIG_FILE="/usr/local/bin/borgetmenot/borgetmenot_$(hostname).conf"
+CONFIG_FILE="/usr/local/bin/borgetmenot/conf/borgetmenot_$(hostname).conf"
 source "$CONFIG_FILE"
 
 
