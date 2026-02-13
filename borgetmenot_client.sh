@@ -484,23 +484,18 @@ main () {
 
 
 	if [ "$(date +%u)" -eq 7 ]; then
-		if [ "$(date +%H)" -eq 12 ]; then
-			log INFO "Sunday maintenance..."
-
-			log INFO "Compacting repository..."
-			if ! run_borg compact; then
-				log WARN "Compact completed with warnings."
-			else
-				log INFO "Compact completed."
-			fi
-
-
-			log INFO "Running full integrity check (this may take a while)..."
-			if ! run_borg check --verify-data; then
-				error_exit "Full integrity check failed."
-			fi
-			log INFO "Full integrity check passed."
+		log INFO "Compacting repository..."
+		if ! run_borg compact; then
+			log WARN "Compact completed with warnings."
+		else
+			log INFO "Compact completed."
 		fi
+
+		log INFO "Running full integrity check (this may take a while)..."
+		if ! run_borg check --verify-data; then
+			error_exit "Full integrity check failed."
+		fi
+		log INFO "Full integrity check passed."
 	fi
 }
 
