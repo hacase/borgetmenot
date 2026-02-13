@@ -7,10 +7,10 @@
 sudo ssh raijin
 ```
 
-## Copy client file
+## Edit client file
 ```bash
 mkdir -p /usr/local/bin/borgetmenot
-cp borgetmenot_client.sh /usr/local/bin/borgetmenot/conf/borgetmenot_client.sh
+cp borgetmenot_client.sh /usr/local/bin/borgetmenot/conf/borgetmenot_<client>.sh
 ```
 
 ## Make environment
@@ -33,7 +33,7 @@ Make sure to backup keyfile and passphrase!!
 
 ## Passfile
 
-Store passfile to default location ```/usr/local/bin/borgetmenot/borgetmenot<client>.txt```.
+Store passfile to default location ```/usr/local/bin/borgetmenot/borgetmenot_<client>.txt```.
 Set permission
 ```bash
 chmod 600 /usr/local/bin/borgetmenot/borgetmenot<client>.txt
