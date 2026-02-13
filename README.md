@@ -36,7 +36,7 @@ Make sure to backup keyfile and passphrase!!
 Store passfile to default location ```/usr/local/bin/borgetmenot/borgetmenot_<client>.txt```.
 Set permission
 ```bash
-chmod 600 /usr/local/bin/borgetmenot/borgetmenot<client>.txt
+chmod 600 /usr/local/bin/borgetmenot/borgetmenot_<client>.txt
 ```
 
 ## Keyfile
