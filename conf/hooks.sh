@@ -19,6 +19,9 @@ docker_manager() {
                         return 0
                 fi
 
+		log INFO "Saving Docker container..."
+		docker ps > ${BACKUP_DIR}/docker_ps.txt
+
                 local sentence="Stopping"
                 echo "$docker_id_name" > "$state_file"
 
