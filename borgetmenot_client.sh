@@ -53,7 +53,7 @@ mkdir -p $LOGDIR
 #LOGFILE="$LOGDIR/borgetmenot_${MACHINE_NAME}.log"
 #MAX_LOG_SIZE_MB=50
 
-#START_INFO="Start borgetmenot."
+#START_INFO="Initiate borgetmenot..."
 #EXIT_INFO="Exit borgetmenot."
 #ERROR_INFO="somewhere only we know"
 #ERROR_MSG=$ERROR_INFO
@@ -175,22 +175,6 @@ exec 2> >(tee -a "$LOGFILE")
 
 
 # ==== Overall ==== #
-
-SCRIPT_PATH="$(readlink -f "$0")"
-SCRIPT_ARGS="$*"
-
-if [[ -n "${INVOCATION_ID:-}" ]]; then
-	MODE="systemd"
-	UNIT_NAME="$(systemctl show -p Id --value "$INVOCATION_ID" 2>/dev/null)"
-else
-	MODE="manual"
-	UNIT_NAME="shell"
-fi
-
-
-TEST_MODE=false
-[ "$1" = "--test" ] || [ "$1" = "-t" ] && TEST_MODE=true
-
 
 title() {
 	local msg="$1"
@@ -389,6 +373,43 @@ run_borg() {
 
 
 #=============================
+# Args
+#=============================
+
+SCRIPT_PATH="$(readlink -f "$0")"
+SCRIPT_ARGS=("$@")
+
+if [[ -n ${INVOCATION_ID:-} ]]; then
+	MODE="systemd"
+	UNIT_NAME="$(systemctl show -p ID --value "$INVOCATION_ID" 2>/dev/null || echo unknown)"
+elif [[ -n ${CRON_PID:-} ]]; then
+	MODE="cron"
+	UNIT_NAME="cron"
+elif [[ -n ${RC_SVCNAME:-} ]]; then
+	MODE="openrc"
+	UNIT_NAME="$RC_SVCNAME"
+else
+	MODE="manual"
+	UNIT_NAME="shell"
+fi
+
+
+TEST_MODE=false
+SKIP_MTN=false
+
+while [[ $# -gt 0 ]]; do
+	case "$1" in 
+		-t|--test) TEST_MODE=true ;;
+		-sm|--skip-maintenance) SKIP_MTN=true ;;
+		--) shift; break ;;
+		-*) echo "Unknown option: $1" >&2; exit 1 ;;
+		*) break ;;
+	esac
+	shift
+done 
+
+
+#=============================
 # Backup
 #=============================
 
@@ -465,7 +486,6 @@ main () {
 		--list \
 		--stats \
 		--keep-within "$KEEP_WITHIN" \
-		--keep-hourly "$KEEP_HOURLY" \
 		--keep-daily "$KEEP_DAILY" \
 		--keep-weekly "$KEEP_WEEKLY" \
 		--keep-monthly "$KEEP_MONTHLY"; then
@@ -476,7 +496,7 @@ main () {
 	fi
 
 
-	if DO_MAINTENANCE; then
+	if DO_MAINTENANCE && [ "$SKIP_MTN" != true ]; then
 		log INFO "Initiate maintenance sequence..."
 		log INFO "Compacting repository..."
 		if ! run_borg compact; then
@@ -640,6 +660,9 @@ fi
 
 log INFO "Mode: $MODE"
 log INFO "Unit name: $UNIT_NAME"
+
+log INFO "Script path: $SCRIPT_PATH"
+log INFO "Args passed: $SCRIPT_ARGS"
 
 # ==== Entry Point ==== #
 
