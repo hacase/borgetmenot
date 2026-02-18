@@ -518,6 +518,12 @@ main () {
 			log INFO "Checking mirror repo..."
 			export BORG_REPO="ssh://${SERVER_NAME}${MIRROR_PATH}"
 
+			if ! run_borg compact; then
+				log WARN "Mirror compact completed with warnings."
+			else
+				log INFO "Mirror compact completed."
+			fi
+
 			if ! run_borg check --veryfy-data; then
 				error_exit "Mirror integrity check failed."
 			fi
