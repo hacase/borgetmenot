@@ -13,7 +13,9 @@ MSMTP_ACCOUNT="gmail"
 
 REPO_ALLBACKUP="/mnt/data/ALLBACKUP"
 REPO_DIR="${REPO_ALLBACKUP}/BORGETMENOT/repos"
-MIRROR_ALLBACKUP="/mnt/IMGREEN/ALLBACKUP"
+
+MIRROR_BASE="/mnt/IMGREEN"
+MIRROR_ALLBACKUP="${MIRROR_BASE}/ALLBACKUP"
 MIRROR_DIR="${MIRROR_ALLBACKUP}/BORGETMENOT/repos"
 
 LOGFILE="/var/log/borgetmenot/borgetmenot_${MACHINE_NAME}.log"
@@ -22,8 +24,8 @@ MAX_LOG_SIZE_MB=50
 
 ERROR_INFO="somewhere only we know"
 
-START_INFO="Initiate mirror..."
-END_INFO="Exit mirror."
+START_INFO="Initiate mirroring ALLBACKUP..."
+END_INFO="Exit mirroring ALLBACKUP."
 
 
 SCRIPT_PATH="$(readlink -f "$0")"
@@ -201,7 +203,7 @@ if $all_idle; then
                 --stats \
                 --human-readable \
                 --exclude 'lock.*' \
-                "${REPO_ALLBACKUP}" "${MIRROR_ALLBACKUP}"
+                "${REPO_ALLBACKUP}" "${MIRROR_BASE}" 2>&1 | tee -a "$LOGFILE"
 else
         log INFO "At least one repo is busy."
 fi
