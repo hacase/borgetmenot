@@ -7,6 +7,11 @@
 sudo ssh raijin
 ```
 
+## Mirror
+```bash
+rsync -aHAX --numeric-ids --delete --stats --human-readable /mnt/data/ALLBACKUP/BORGETMENOT/ /mnt/IMGREEN/ALLBACKUP/BORGETMENOT/
+```
+
 ## Edit client file
 ```bash
 mkdir -p /usr/local/bin/borgetmenot

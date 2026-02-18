@@ -364,7 +364,7 @@ run_borg() {
 
 	borg_base_cmd+=(
 		borg
-		--debug
+		#--debug
 		--lock-wait 600
 	)
 
@@ -510,6 +510,19 @@ main () {
 		log INFO "Checking primary repo..."
 		if ! run_borg check --verify-data; then
 			error_exit "Full integrity check failed."
+		fi
+
+		if [[ -v "$MIRROR_PATH" ]]; then
+			log INFO "Mirror Path set to ${MIRROR_PATH}"
+
+			log INFO "Checking mirror repo..."
+			export BORG_REPO="ssh://${SERVER_NAME}${MIRROR_PATH}"
+
+			if ! run_borg check --veryfy-data; then
+				error_exit "Mirror integrity check failed."
+			fi
+		else
+			log INFO "No mirror repo path set."
 		fi
 		log INFO "Full integrity check passed."
 	fi
