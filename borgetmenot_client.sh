@@ -364,6 +364,7 @@ run_borg() {
 
 	borg_base_cmd+=(
 		borg
+		--debug
 		--lock-wait 600
 	)
 
@@ -506,6 +507,7 @@ main () {
 		fi
 
 		log INFO "Running full integrity check (this may take a while)..."
+		log INFO "Checking primary repo..."
 		if ! run_borg check --verify-data; then
 			error_exit "Full integrity check failed."
 		fi
