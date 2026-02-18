@@ -4,8 +4,9 @@ set -e
 set -o pipefail
 set -E
 
-
+echo ""
 CONFIG_FILE="/usr/local/bin/borgetmenot/conf/borgetmenot_$(hostname).conf"
+echo $CONFIG_FILE
 
 read -r -p "Enter config file (y/N): " CHANGE_CONFIG
 if [[ "$CHANGE_CONFIG" =~ ^[yY]$ ]]; then
