@@ -511,8 +511,8 @@ main () {
 		if ! run_borg check --verify-data; then
 			error_exit "Full integrity check failed."
 		fi
-
-		if [[ -v "$MIRROR_PATH" ]]; then
+		
+		if [[ -v MIRROR_PATH ]]; then
 			log INFO "Mirror Path set to ${MIRROR_PATH}"
 
 			log INFO "Checking mirror repo..."
@@ -524,7 +524,7 @@ main () {
 				log INFO "Mirror compact completed."
 			fi
 
-			if ! run_borg check --veryfy-data; then
+			if ! run_borg check --verify-data; then
 				error_exit "Mirror integrity check failed."
 			fi
 		else
