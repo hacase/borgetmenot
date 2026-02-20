@@ -20,21 +20,8 @@ source "$CONFIG_FILE"
 #MACHINE_NAME="thinkerp50"
 #MACHINE_USER="taroot"
 
-#BORG_PASSFILE="/home/taroot/something/donthackmepls/borg/borgetmenot_thinkerp50.txt"
 #BACKUP_DIR="/home/${MACHINE_USER}/borgetmenot_files"
 mkdir -p $BACKUP_DIR
-
-
-#=============================
-# Server
-#=============================
-
-#SERVER_IP="192.168.178.224"
-#SERVER_USER="taroot"
-#SERVER_NAME="raijin"
-
-#REPO_BASE_PATH="/mnt/data/ALLBACKUP/BORGETMENOT/repos"
-#REPO_PATH="$REPO_BASE_PATH/${MACHINE_NAME}"
 
 
 #=============================
@@ -50,29 +37,13 @@ export BORG_REPO="ssh://${SERVER_NAME}${REPO_PATH}"
 
 #LOGDIR="/var/log/borgetmenot"
 mkdir -p $LOGDIR
-#LOGFILE="$LOGDIR/borgetmenot_${MACHINE_NAME}.log"
-#MAX_LOG_SIZE_MB=50
-
-#START_INFO="Initiate borgetmenot..."
-#EXIT_INFO="Exit borgetmenot."
-#ERROR_INFO="somewhere only we know"
-#ERROR_MSG=$ERROR_INFO
-
-
-#=============================
-# Notification
-#=============================
-
-#NOTIFY_EMAIL="tarowtb@pm.me"
-#MSMTP_ACCOUNT="proton"
-#NOTIFY_METHOD="both"
-
-#DISK_THRESHOLD_WARN=80
-#DISK_THRESHOLD_CRITICAL=95
 
 #=============================
 # Hook
 #=============================
+
+MID_HOOKS_DONE=false
+POST_HOOKS_DONE=false
 
 run_hooks() {
 	local cmd="$1"
@@ -80,30 +51,8 @@ run_hooks() {
 	if type -t "$cmd" >/dev/null 2>&1; then
 		"$cmd"
 		return ${PIPESTATUS[0]}
-	else
-		LOG INFO "I don't have any hooks."
 	fi
 }
-
-
-#=============================
-# Borg config
-#=============================
-
-#BACKUP_PATHS=(
-#	"/home/"
-#	"/etc"
-#	"/usr/local"
-#	"/opt"
-#	"/var/lib/systemd"
-#	"/var/lib/NetworkManager"
-#)
-
-#KEEP_WITHIN="6H"
-#KEEP_HOURLY=24
-#KEEP_DAILY=14
-#KEEP_WEEKLY=5
-#KEEP_MONTHLY=6
 
 
 #=============================
@@ -117,13 +66,20 @@ cleanup() {
 
 	log INFO "Cleaning up..."
 
-	if [[ $TEST_MODE == false ]]; then
-		title 'Captain Hook leaving'
-		run_hooks POST_HOOKS
-	fi
-
 	log INFO "Unsetting passcommand..."
 	unset BORG_PASSCOMMAND
+
+	if [[ ${TEST_MODE} == false ]]; then
+		if [[ ${MID_HOOKS_DONE} == false ]]; then
+			title 'Captain Hook is peaking'
+			run_hooks MID_HOOKS
+		fi
+
+		if [[ ${POST_HOOKS_DONE} == false ]]; then
+			title 'Captain Hook is leaving'
+			run_hooks POST_HOOKS
+		fi
+	fi
 
 	log INFO "$EXIT_INFO"
 }
@@ -364,6 +320,7 @@ run_borg() {
 
 	borg_base_cmd+=(
 		borg
+		--info
 		#--debug
 		--lock-wait 600
 	)
@@ -418,19 +375,34 @@ main () {
 	rotate_log
 
 
+	title "Captain Hook is here"
+	run_hooks PRE_HOOKS
+
+
 	title "Starting backup at $(date)"
+
 
 	log INFO "Backup started..."
 	prebackup_check
 
+	local exclude_paths=()
+	if [[ -n "${EXCLUDE_PATHS[@]}" ]]; then
+		for path in "${EXCLUDE_PATHS}"; do
+			exclude_paths+=(--exclude "$path")
+		done
+	fi
+
+
 	log INFO "Creating backup archive..."
 	if ! run_borg create \
-		--compression auto,lz4 \
 		--stats \
+		--compression auto,lz4 \
 		--exclude-caches \
 		--checkpoint-interval 120 \
 		::${MACHINE_NAME}_{now:%Y-%m-%d_%H-%M-%S} \
-		"${BACKUP_PATHS[@]}" \
+		\
+		"${INCLUDE_PATHS[@]}" \
+		"${exclude_paths[@]}" \
 		\
 		`# User data` \
 		--exclude 'home/*/Downloads' \
@@ -482,6 +454,11 @@ main () {
 	log INFO "Backup created successfully."
 
 
+	title 'Captain Hook is peaking'
+	run_hooks MID_HOOKS
+	MID_HOOKS_DONE=true
+
+
 	log INFO "Pruning old backups..."
 	if ! run_borg prune \
 		--list \
@@ -497,8 +474,12 @@ main () {
 	fi
 
 
-	if DO_MAINTENANCE && [ "$SKIP_MTN" != true ]; then
-		log INFO "Initiate maintenance sequence..."
+	local day=$(date "+%d")
+	local weekday=$(date "+%u")
+
+	if [[ $weekday -eq 7 ]] && \
+		! do_maintenance && [[ "$SKIP_MTN" != true ]];
+	then
 		log INFO "Compacting repository..."
 		if ! run_borg compact; then
 			log WARN "Compact completed with warnings."
@@ -506,32 +487,54 @@ main () {
 			log INFO "Compact completed."
 		fi
 
+
+		log INFO "Checking primary repository..."
+		if ! run_borg check; then
+			error_exit "Check failed."
+		else
+			log INFO "Check completed."
+		fi
+	fi
+
+
+	if do_maintenance && [[ "$SKIP_MTN" != true ]]; then
+		log INFO "Initiate maintenance sequence..."
+
+		log INFO "Compacting primary repository..."
+		if ! run_borg compact; then
+			log WARN "Compact completed with warnings."
+		else
+			log INFO "Compact completed."
+		fi
+
+		log INFO "Checking primary repository..."
 		log INFO "Running full integrity check (this may take a while)..."
-		log INFO "Checking primary repo..."
 		if ! run_borg check --verify-data; then
 			error_exit "Full integrity check failed."
 		fi
 		
+
 		if [[ -v MIRROR_PATH ]]; then
 			log INFO "Mirror Path set to ${MIRROR_PATH}"
 
-			log INFO "Checking mirror repo..."
+			log INFO "Checking mirror repository..."
 			export BORG_REPO="ssh://${SERVER_NAME}${MIRROR_PATH}"
-
-			if ! run_borg compact; then
-				log WARN "Mirror compact completed with warnings."
-			else
-				log INFO "Mirror compact completed."
-			fi
 
 			if ! run_borg check --verify-data; then
 				error_exit "Mirror integrity check failed."
 			fi
 		else
-			log INFO "No mirror repo path set."
+			log INFO "No mirror repository path set."
 		fi
+
+
 		log INFO "Full integrity check passed."
 	fi
+
+
+	#title 'Captain Hook is leaving'
+	#run_hooks POST_HOOKS
+	#POST_HOOKS_DONE=true
 }
 
 
@@ -690,9 +693,6 @@ log INFO "Args passed: $SCRIPT_ARGS"
 if [ "$TEST_MODE" = true ]; then
 	run_test
 else
-	title "Captain Hook is here"
-	run_hooks PRE_HOOKS
-
 	main
 fi
 

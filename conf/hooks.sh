@@ -1,7 +1,6 @@
 #!/bin/bash
 
 
-
 docker_manager() {
         local action="$1"
         local state_file="/tmp/borgetmenot_docker.state"
