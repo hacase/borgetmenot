@@ -646,9 +646,7 @@ Heyo, test email from ozaki via borgetmenot worked!"
 	log INFO "All tests passed at $(date)."
 
 	log INFO "Check log file for details:"
-	echo ""
 	log INFO "   cat $LOGFILE"
-	echo ""
 
 	return 0
 }
@@ -686,7 +684,7 @@ log INFO "Mode: $MODE"
 log INFO "Unit name: $UNIT_NAME"
 
 log INFO "Script path: $SCRIPT_PATH"
-log INFO "Args passed: $SCRIPT_ARGS"
+log INFO "Args passed: ${SCRIPT_ARGS[*]}"
 
 # ==== Entry Point ==== #
 
